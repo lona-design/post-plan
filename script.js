@@ -25,6 +25,7 @@
     clearFilters: document.querySelector("#clear-filters"),
     upcoming: document.querySelector("#upcoming-section"),
     upcomingList: document.querySelector("#upcoming-list"),
+    upcomingSummary: document.querySelector("#upcoming-summary"),
     editor: document.querySelector("#editor-dialog"),
     editorForm: document.querySelector("#editor-form"),
     editorHeading: document.querySelector("#editor-heading"),
@@ -38,6 +39,7 @@
     notes: document.querySelector("#notes-input"),
     starred: document.querySelector("#starred-input"),
     titleError: document.querySelector("#title-error"),
+    dateError: document.querySelector("#date-error"),
     save: document.querySelector("#save-button"),
     confirm: document.querySelector("#confirm-dialog"),
     confirmHeading: document.querySelector("#confirm-heading"),
@@ -45,8 +47,6 @@
     confirmDetails: document.querySelector("#confirm-details"),
     confirmActions: document.querySelector("#confirm-actions"),
     confirmSymbol: document.querySelector("#confirm-symbol"),
-    toolsTrigger: document.querySelector("#tools-trigger"),
-    toolsMenu: document.querySelector("#tools-menu"),
     restoreInput: document.querySelector("#restore-input"),
     toastRegion: document.querySelector("#toast-region")
   };
@@ -221,7 +221,8 @@
 
   function hasActiveFilters() {
     return Boolean(elements.search.value.trim() || elements.platformFilter.value !== "all" ||
-      elements.statusFilter.value !== "all" || elements.dateFilter.value !== "all" || elements.starredFilter.checked);
+      elements.statusFilter.value !== "all" || elements.dateFilter.value !== "all" ||
+      elements.sort.value !== "recent" || elements.starredFilter.checked);
   }
 
   function getVisibleItems() {
@@ -324,22 +325,41 @@
   }
 
   function renderUpcoming() {
-    const upcoming = items.filter((item) => item.status !== "posted" && isUpcomingDate(item.plannedDate))
+    const allUpcoming = items.filter((item) => item.status !== "posted" && isUpcomingDate(item.plannedDate))
       .sort((a, b) => a.plannedDate.localeCompare(b.plannedDate) || (Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0))
-      .slice(0, 3);
+    const upcoming = allUpcoming.slice(0, 3);
     elements.upcoming.hidden = upcoming.length === 0;
+    elements.upcomingSummary.textContent = `${allUpcoming.length} planned in the next 7 days`;
     elements.upcomingList.replaceChildren();
     for (const item of upcoming) {
-      const card = document.createElement("article");
+      const card = document.createElement("button");
+      card.type = "button";
       card.className = "upcoming-item";
+      card.dataset.action = "edit-upcoming";
+      card.dataset.id = item.id;
+      card.setAttribute("aria-label", `Edit ${item.title}, planned ${dateLabel(item.plannedDate)}, ${LABELS.platform[item.platform]}, ${LABELS.status[item.status]}`);
       const title = document.createElement("div");
       title.className = "upcoming-title";
       title.textContent = item.title;
       const meta = document.createElement("div");
       meta.className = "upcoming-meta";
       meta.append(badge(LABELS.platform[item.platform], `platform-badge platform-${item.platform}`));
-      meta.append(document.createTextNode(dateLabel(item.plannedDate)));
-      card.append(title, meta, badge(LABELS.status[item.status], `status-badge status-${item.status}`));
+      const date = document.createElement("span");
+      date.className = "upcoming-date";
+      const dateValue = document.createElement("span");
+      dateValue.textContent = dateLabel(item.plannedDate);
+      const dateDistance = Math.round((parseLocalDate(item.plannedDate) - parseLocalDate(localToday())) / 86400000);
+      const relativeDate = document.createElement("span");
+      relativeDate.className = "upcoming-relative-date";
+      relativeDate.textContent = dateDistance === 0 ? "Today" : dateDistance === 1 ? "Tomorrow" : `In ${dateDistance} days`;
+      date.append(dateValue, relativeDate);
+      const status = badge(LABELS.status[item.status], `status-badge status-${item.status}`);
+      status.classList.add("upcoming-status");
+      const arrow = document.createElement("span");
+      arrow.className = "upcoming-arrow";
+      arrow.setAttribute("aria-hidden", "true");
+      arrow.textContent = "→";
+      card.append(title, date, meta, status, arrow);
       elements.upcomingList.append(card);
     }
   }
@@ -349,6 +369,13 @@
       const status = count.dataset.count;
       count.textContent = status === "total" ? String(items.length) : String(items.filter((item) => item.status === status).length);
     }
+    document.querySelectorAll(".filter-control").forEach((control) => {
+      const select = control.querySelector("select");
+      const defaultValue = select.id === "sort-select" ? "recent" : "all";
+      control.classList.toggle("is-active", select.value !== defaultValue);
+    });
+    elements.search.parentElement.classList.toggle("is-active", Boolean(elements.search.value.trim()));
+    elements.starredFilter.closest(".star-filter").classList.toggle("is-active", elements.starredFilter.checked);
     renderUpcoming();
     const visible = getVisibleItems();
     elements.list.replaceChildren(...visible.map(renderRow));
@@ -433,7 +460,11 @@
     elements.save.textContent = mode === "edit" ? "Save changes" : mode === "duplicate" ? "Save content" : "Save content";
     elements.editorForm.reset();
     elements.titleError.textContent = "";
+    elements.dateError.textContent = "";
     elements.title.removeAttribute("aria-invalid");
+    elements.date.removeAttribute("aria-invalid");
+    elements.title.closest(".field").classList.remove("is-invalid");
+    elements.date.closest(".field").classList.remove("is-invalid");
     if (item) {
       elements.title.value = item.title;
       elements.platform.value = item.platform;
@@ -482,22 +513,29 @@
   function validateForm() {
     const title = elements.title.value.trim();
     if (!title) {
-      elements.titleError.textContent = "Add a title to save this content.";
+      elements.titleError.textContent = "Enter a title.";
       elements.title.setAttribute("aria-invalid", "true");
+      elements.title.closest(".field").classList.add("is-invalid");
       elements.title.focus();
       return false;
     }
     elements.titleError.textContent = "";
     elements.title.removeAttribute("aria-invalid");
+    elements.title.closest(".field").classList.remove("is-invalid");
     if (!Object.hasOwn(LABELS.platform, elements.platform.value) || !Object.hasOwn(LABELS.status, elements.status.value)) {
       toast("Choose a valid platform and status.", "error");
       return false;
     }
     if (elements.date.value && !isValidDate(elements.date.value)) {
-      toast("Choose a valid planned date.", "error");
+      elements.dateError.textContent = "Choose a valid planned date.";
+      elements.date.setAttribute("aria-invalid", "true");
+      elements.date.closest(".field").classList.add("is-invalid");
       elements.date.focus();
       return false;
     }
+    elements.dateError.textContent = "";
+    elements.date.removeAttribute("aria-invalid");
+    elements.date.closest(".field").classList.remove("is-invalid");
     return true;
   }
 
@@ -614,12 +652,6 @@
     toast("Filters cleared.");
   }
 
-  function closeToolsMenu(restoreFocus = false) {
-    elements.toolsMenu.hidden = true;
-    elements.toolsTrigger.setAttribute("aria-expanded", "false");
-    if (restoreFocus) elements.toolsTrigger.focus();
-  }
-
   function downloadFile(name, content, mimeType) {
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
@@ -719,16 +751,8 @@
     });
   }
 
-  function handleTool(tool) {
-    closeToolsMenu();
-    if (tool === "csv") exportCsv();
-    if (tool === "backup") exportBackup();
-    if (tool === "restore") elements.restoreInput.click();
-  }
-
   function handleGlobalClick(event) {
     if (openMenu && !openMenu.element.contains(event.target) && !openMenu.trigger.contains(event.target)) closeRowMenu();
-    if (!elements.toolsMenu.hidden && !elements.toolsMenu.contains(event.target) && !elements.toolsTrigger.contains(event.target)) closeToolsMenu();
   }
 
   function handleKeydown(event) {
@@ -739,7 +763,6 @@
         return;
       }
       if (openMenu) { closeRowMenu(true); event.stopPropagation(); return; }
-      if (!elements.toolsMenu.hidden) { closeToolsMenu(true); return; }
       if (elements.editor.open) { event.preventDefault(); closeEditorIfClean(); return; }
     }
     const target = event.target;
@@ -756,6 +779,18 @@
 
   function installEvents() {
     elements.editorForm.addEventListener("submit", submitForm);
+    elements.title.addEventListener("input", () => {
+      if (!elements.title.value.trim()) return;
+      elements.titleError.textContent = "";
+      elements.title.removeAttribute("aria-invalid");
+      elements.title.closest(".field").classList.remove("is-invalid");
+    });
+    elements.date.addEventListener("change", () => {
+      if (elements.date.value && !isValidDate(elements.date.value)) return;
+      elements.dateError.textContent = "";
+      elements.date.removeAttribute("aria-invalid");
+      elements.date.closest(".field").classList.remove("is-invalid");
+    });
     elements.editor.addEventListener("cancel", (event) => { event.preventDefault(); closeEditorIfClean(); });
     elements.editor.addEventListener("click", (event) => {
       if (event.target === elements.editor) closeEditorIfClean();
@@ -772,16 +807,6 @@
     elements.searchClear.addEventListener("click", () => { elements.search.value = ""; render(); elements.search.focus(); });
     [elements.platformFilter, elements.statusFilter, elements.dateFilter, elements.sort, elements.starredFilter].forEach((input) => input.addEventListener("change", render));
     elements.clearFilters.addEventListener("click", clearFilters);
-    elements.toolsTrigger.addEventListener("click", () => {
-      const willOpen = elements.toolsMenu.hidden;
-      elements.toolsMenu.hidden = !willOpen;
-      elements.toolsTrigger.setAttribute("aria-expanded", String(willOpen));
-      if (willOpen) elements.toolsMenu.querySelector("button")?.focus();
-    });
-    elements.toolsMenu.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-tool]");
-      if (button) handleTool(button.dataset.tool);
-    });
     elements.restoreInput.addEventListener("change", () => handleRestoreFile(elements.restoreInput.files[0]));
     document.addEventListener("click", handleGlobalClick);
     document.addEventListener("keydown", handleKeydown);
@@ -792,6 +817,10 @@
       if (name === "add") openEditor("add");
       if (name === "request-close") closeEditorIfClean();
       if (name === "clear-filters") clearFilters();
+      if (name === "edit-upcoming") {
+        const item = items.find((record) => record.id === action.dataset.id);
+        if (item) openEditor("edit", item);
+      }
       if (name === "view-upcoming") {
         elements.dateFilter.value = "upcoming";
         render();

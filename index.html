@@ -3,8 +3,10 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#f7f7fa">
+    <meta name="theme-color" content="#090a0e">
     <title>PostPlan — Plan ideas. Stay consistent.</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%2300A6FF' fill-rule='evenodd' d='M8 42V12C8 8.686 10.686 6 14 6h11c9.389 0 15 5.224 15 13C40 20.15 39.86 21.2 39.6 22.25H37.5v2h1.2C36.4 29.1 31.7 32 25 32H17v6c0 2.209-1.791 4-4 4zm9-27v9h8c3.4 0 5-1.6 5-4.5S28.4 15 25 15z'/%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cdefs%3E%3ClinearGradient id='a' x1='8' y1='8' x2='40' y2='40' gradientUnits='userSpaceOnUse'%3E%3Cstop stop-color='%2300A6FF'/%3E%3Cstop offset='.45' stop-color='%233278FF'/%3E%3Cstop offset='1' stop-color='%236500FF'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='48' height='48' rx='11' fill='%23090A0E'/%3E%3Cg transform='translate(6.72 6.72) scale(.72)'%3E%3Cpath fill='url(%23a)' fill-rule='evenodd' d='M8 42V12C8 8.686 10.686 6 14 6h11c9.389 0 15 5.224 15 13C40 20.15 39.86 21.2 39.6 22.25H37.5v2h1.2C36.4 29.1 31.7 32 25 32H17v6c0 2.209-1.791 4-4 4zm9-27v9h8c3.4 0 5-1.6 5-4.5S28.4 15 25 15z'/%3E%3C/g%3E%3C/svg%3E">
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
   </head>
@@ -13,10 +15,15 @@
       <header class="topbar">
         <a class="brand" href="#" aria-label="PostPlan home">
           <span class="brand-mark" aria-hidden="true">
-            <svg viewBox="0 0 32 32" fill="none">
-              <rect x="4" y="5" width="18" height="22" rx="4" fill="currentColor" opacity=".18"/>
-              <path d="M10 10h10M10 14h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="m19 21 2.2 2.2L27 17.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg viewBox="0 0 48 48" aria-hidden="true">
+              <defs>
+                <linearGradient id="postplan-brand-gradient" x1="8" y1="8" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#00A6FF"/>
+                  <stop offset=".45" stop-color="#3278FF"/>
+                  <stop offset="1" stop-color="#6500FF"/>
+                </linearGradient>
+              </defs>
+              <path class="brand-mark__base" fill="url(#postplan-brand-gradient)" fill-rule="evenodd" d="M8 42V12C8 8.686 10.686 6 14 6h11c9.389 0 15 5.224 15 13C40 20.15 39.86 21.2 39.6 22.25H37.5v2h1.2C36.4 29.1 31.7 32 25 32H17v6c0 2.209-1.791 4-4 4zm9-27v9h8c3.4 0 5-1.6 5-4.5S28.4 15 25 15z"/>
             </svg>
           </span>
           <span class="brand-copy">
@@ -25,17 +32,6 @@
           </span>
         </a>
         <div class="header-actions">
-          <div class="tools-wrap">
-            <button class="button button-secondary tools-trigger" id="tools-trigger" type="button" aria-expanded="false" aria-haspopup="menu">
-              <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="4" cy="10" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="16" cy="10" r="1.5"/></svg>
-              <span>Tools</span>
-            </button>
-            <div class="tools-menu" id="tools-menu" role="menu" hidden>
-              <button type="button" role="menuitem" data-tool="csv">Export CSV</button>
-              <button type="button" role="menuitem" data-tool="backup">Export backup</button>
-              <button type="button" role="menuitem" data-tool="restore">Restore backup</button>
-            </div>
-          </div>
           <button class="button button-primary add-button" type="button" data-action="add">
             <span class="plus-icon" aria-hidden="true">+</span><span>Add content</span>
           </button>
@@ -47,22 +43,18 @@
           <article class="summary-card summary-total">
             <span class="summary-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4.75h8.5L19 8.3v11a.95.95 0 0 1-.95.95H7a.95.95 0 0 1-.95-.95V5.7A.95.95 0 0 1 7 4.75Z"/><path d="M15 4.9v3.7h3.7M9 12h6M9 15.5h6"/></svg></span>
             <div class="summary-label">Total ideas</div><div class="summary-count" data-count="total">0</div><p>All content in your pipeline</p>
-            <span class="summary-blob" aria-hidden="true"></span>
           </article>
           <article class="summary-card summary-drafting">
             <span class="summary-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m14.5 5.5 4 4M5 19l3.8-.8L19 8a2.83 2.83 0 0 0-4-4L4.8 14.2 4 18Z"/></svg></span>
             <div class="summary-label">Drafting</div><div class="summary-count" data-count="drafting">0</div><p>Currently being worked on</p>
-            <span class="summary-blob" aria-hidden="true"></span>
           </article>
           <article class="summary-card summary-ready">
             <span class="summary-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.3 4.3L19 7"/></svg></span>
             <div class="summary-label">Ready</div><div class="summary-count" data-count="ready">0</div><p>Ready when you are</p>
-            <span class="summary-blob" aria-hidden="true"></span>
           </article>
           <article class="summary-card summary-posted">
             <span class="summary-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.75 14.5 9l5.75.75-4.2 4 .98 5.75L12 16.8l-5.03 2.7.98-5.75-4.2-4L9.5 9 12 3.75Z"/></svg></span>
             <div class="summary-label">Posted</div><div class="summary-count" data-count="posted">0</div><p>Already published</p>
-            <span class="summary-blob" aria-hidden="true"></span>
           </article>
         </section>
 
@@ -76,10 +68,13 @@
 
           <section class="upcoming-section" id="upcoming-section" aria-labelledby="upcoming-heading" hidden>
             <div class="upcoming-heading">
-              <div><h2 id="upcoming-heading">Coming up</h2><p>Your next few planned posts</p></div>
-              <button class="text-button" type="button" data-action="view-upcoming">View all <span aria-hidden="true">→</span></button>
+              <div>
+                <h2 id="upcoming-heading">Coming up</h2>
+                <p id="upcoming-summary">Planned in the next 7 days</p>
+              </div>
+              <button class="text-button" type="button" data-action="view-upcoming">View all upcoming <span aria-hidden="true">→</span></button>
             </div>
-            <div class="upcoming-list" id="upcoming-list"></div>
+            <div class="upcoming-list" id="upcoming-list" aria-label="Upcoming content"></div>
           </section>
 
           <div class="toolbar" aria-label="Search and filter content">
@@ -140,13 +135,36 @@
           <button class="icon-button close-modal" type="button" aria-label="Close dialog" data-action="request-close">×</button>
         </div>
         <div class="form-grid">
-          <label class="field field-full"><span>Title <b aria-hidden="true">*</b></span><input id="title-input" name="title" type="text" maxlength="160" placeholder="e.g. Morning routine reel" required aria-describedby="title-error"><small class="field-error" id="title-error"></small></label>
-          <label class="field"><span>Platform <b aria-hidden="true">*</b></span><select id="platform-input" name="platform" required><option value="instagram">Instagram</option><option value="youtube">YouTube</option><option value="facebook">Facebook</option></select></label>
-          <label class="field"><span>Content type</span><select id="type-input" name="contentType"><option value="">Choose a type</option><option value="reel">Reel / Short</option><option value="video">Video</option><option value="post">Post</option><option value="story">Story</option><option value="carousel">Carousel</option><option value="other">Other</option></select></label>
-          <label class="field"><span>Planned posting date</span><input id="date-input" name="plannedDate" type="date"></label>
-          <label class="field"><span>Status <b aria-hidden="true">*</b></span><select id="status-input" name="status" required><option value="idea">Idea</option><option value="drafting">Drafting</option><option value="ready">Ready</option><option value="posted">Posted</option></select></label>
-          <label class="field"><span>Content pillar</span><select id="pillar-input" name="pillar"><option value="">Choose a pillar</option><option value="lifestyle">Lifestyle</option><option value="travel">Travel</option><option value="food">Food</option><option value="education">Education</option><option value="personal">Personal</option><option value="other">Other</option></select></label>
-          <label class="field field-full"><span>Notes</span><textarea id="notes-input" name="notes" rows="4" maxlength="4000" placeholder="Hook, caption idea, talking points..."></textarea></label>
+          <div class="field field-full">
+            <label class="field__label" for="title-input">Title <b aria-hidden="true">*</b></label>
+            <input class="field__control" id="title-input" name="title" type="text" maxlength="160" placeholder="Morning routine reel" required aria-describedby="title-error">
+            <small class="field-error" id="title-error"></small>
+          </div>
+          <div class="field">
+            <label class="field__label" for="platform-input">Platform <b aria-hidden="true">*</b></label>
+            <select class="field__control" id="platform-input" name="platform" required><option value="instagram">Instagram</option><option value="youtube">YouTube</option><option value="facebook">Facebook</option></select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="type-input">Content type</label>
+            <select class="field__control" id="type-input" name="contentType"><option value="">Choose a type</option><option value="reel">Reel / Short</option><option value="video">Video</option><option value="post">Post</option><option value="story">Story</option><option value="carousel">Carousel</option><option value="other">Other</option></select>
+          </div>
+          <div class="field">
+            <label class="field__label" for="date-input">Planned posting date</label>
+            <input class="field__control" id="date-input" name="plannedDate" type="date" aria-describedby="date-error">
+            <small class="field-error" id="date-error"></small>
+          </div>
+          <div class="field">
+            <label class="field__label" for="status-input">Status <b aria-hidden="true">*</b></label>
+            <select class="field__control" id="status-input" name="status" required><option value="idea">Idea</option><option value="drafting">Drafting</option><option value="ready">Ready</option><option value="posted">Posted</option></select>
+          </div>
+          <div class="field field-full">
+            <label class="field__label" for="pillar-input">Content pillar</label>
+            <select class="field__control" id="pillar-input" name="pillar"><option value="">Choose a pillar</option><option value="lifestyle">Lifestyle</option><option value="travel">Travel</option><option value="food">Food</option><option value="education">Education</option><option value="personal">Personal</option><option value="other">Other</option></select>
+          </div>
+          <div class="field field-full field-notes">
+            <label class="field__label" for="notes-input">Notes</label>
+            <textarea class="field__control" id="notes-input" name="notes" rows="4" maxlength="4000" placeholder="Hook, caption idea, talking points..."></textarea>
+          </div>
           <label class="star-field"><input id="starred-input" name="starred" type="checkbox"><span class="star-check" aria-hidden="true">☆</span><span>Save as an important idea</span></label>
         </div>
         <div class="modal-footer"><button class="button button-secondary" type="button" data-action="request-close">Cancel</button><button class="button button-primary" id="save-button" type="submit">Save content</button></div>
